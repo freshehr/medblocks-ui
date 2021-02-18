@@ -19,7 +19,7 @@ function getDocs(path) {
     try {
         const file = fs.readFileSync(path, "utf-8")
         const matches = file.match(/\/\*\*\s*\n([^\*]|(\*(?!\/)))*\*\//g)
-        if (matches == null) {
+        if (matches === null) {
             console.log(`${path}: No docs found`)
             return []
         }
@@ -36,6 +36,7 @@ function getDocs(path) {
 }
 const leafOptions = getDocs("src/composition/Leaf.svelte")
 const groupOptions = getDocs("src/composition/Group.svelte")
+console.log(groupOptions)
 console.log("JsDocs: start")
 let parsed = {}
 Object.keys(files).forEach(key=>{

@@ -22,20 +22,22 @@ function extractInputs(tree: Tree, path: string, parentName: string, config: any
     const eventTypes = ['EVENT', 'POINT_EVENT', 'INTERVAL_EVENT']
     if (eventTypes.includes(rmType)) {
         inGroup = true
-        name = `${parentName} (${name})`
+        if (!["Any event"].includes(name)) {
+            name = `${parentName} (${name})`
+        }
         // name = ''
     }
-    if (['OBSERVATION'].includes(rmType)) {
+    if (['OBSERVATION', 'ACTION', 'INSTRUCTION', 'CLUSTER', 'SECTION'].includes(rmType)) {
         inGroup = true
         if (children && children?.filter(child => eventTypes.includes(child.rmType)).length > 0) {
             newParentName = name
             name = ''
         }
     }
-    if (max > 1 || max == -1 || inGroup) {
+    if (max > 1 || max === -1 || inGroup) {
         let label: string | undefined
         let repeatable: boolean = false
-        if (max > 1 || max == -1) {
+        if (max > 1 || max === -1) {
             repeatable = true
         }
         let extractedChildren: Extracted[]
@@ -103,18 +105,25 @@ function extractInputs(tree: Tree, path: string, parentName: string, config: any
     }
 }
 
-function generateSchema(template: Template, configuration: any = {}, readOnly: boolean): UITemplate {
+function generateSchema(template: Template, configuration: any = {}, readOnly: boolean) {
     const { tree } = template
     const contextTree = propogateContext(tree, false)
     let schema = extractInputs(contextTree, '', '', configuration, readOnly)
     if (!Array.isArray(schema)) {
         throw new Error('Top level template returned only one extracted')
     }
-    const uiTemplate = {
-        options: configuration.global || {},
-        schema
+    let options = configuration[""]?.[readOnly ? 'read' : 'write']
+    const {id, rmType, aqlPath, name} = template.tree
+    return {
+        type: 'Group',
+        ...options,
+        path: id,
+        rmType,
+        aqlPath,
+        label: name,
+        repeatable: false,
+        children: schema
     }
-    return uiTemplate
 }
 
 function sanitizeValues(values: keyValue): keyValue {
@@ -128,7 +137,7 @@ function sanitizeValues(values: keyValue): keyValue {
                 return
             }
         }
-        let newKey = key.length && key[0] == "/" ? key.slice(1) : key;
+        let newKey = key.length && key[0] === "/" ? key.slice(1) : key;
         newValues[newKey] = value;
     });
     return { ...newValues };

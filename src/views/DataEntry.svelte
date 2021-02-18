@@ -17,7 +17,7 @@ import Navbar from "./Navbar.svelte";
         activeTemplates = $config.templates.filter(t => t.active)
     }
     let currentTemplate: TemplateConfig | null;
-    let store = writable({});
+    let store = writable({'ctx/language': 'en'});
     let readOnly = true;
     interface composition {
         data: keyValue;
@@ -62,13 +62,12 @@ import Navbar from "./Navbar.svelte";
         </ul>
     </div>
     <div class="columns">
-        <div class="column is-half">
+        <div class="column">
             {#if currentTemplate}
             <Composition
                 template={currentTemplate.template}
                 configuration={currentTemplate.configuration}
                 {store}
-                initialData={{'ctx/language': 'en'}}
                 on:done={e=>createComposition(currentTemplate, e.detail)}
                 />
             {:else}
@@ -83,10 +82,10 @@ import Navbar from "./Navbar.svelte";
                 {/each}
             {/if}
         </div>
-        <div class="column is-half">
+        <!-- <div class="column is-half">
             <pre>
                 {JSON.stringify($store, null, 2)}
             </pre>
-        </div>
+        </div> -->
     </div>
 </Patient>
